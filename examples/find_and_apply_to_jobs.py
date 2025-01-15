@@ -33,7 +33,10 @@ import logging
 logger = logging.getLogger(__name__)
 # full screen mode
 controller = Controller()
-CV = Path.cwd() / 'cv_04_24.pdf'
+CV = Path(__file__).parents[1] / 'static' / 'David-Porkka-Web-Dev-Resume.pdf'
+
+if not CV.exists():
+	raise FileNotFoundError(f"CV file not found at {CV}")
 
 
 class Job(BaseModel):
@@ -107,8 +110,10 @@ async def upload_cv(index: int, browser: BrowserContext):
 
 browser = Browser(
 	config=BrowserConfig(
-		chrome_instance_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+		chrome_instance_path='/usr/bin/google-chrome',
 		disable_security=True,
+		debugging_port=9222,
+		is_headless=False,
 	)
 )
 
@@ -125,24 +130,22 @@ async def main():
 	ground_task = (
 		'You are a professional job finder. '
 		'1. Read my cv with read_cv'
-		'find ml internships in and save them to a file'
+		'find remote jobs that are a good fit for me and save them to a file'
 		'search at company:'
 	)
 	tasks = [
 		ground_task + '\n' + 'Google',
 		# ground_task + '\n' + 'Amazon',
-		# ground_task + '\n' + 'Apple',
-		# ground_task + '\n' + 'Microsoft',
+	     ground_task + '\n' + 'Apple',
+		 ground_task + '\n' + 'Microsoft',
 		# ground_task
 		# + '\n'
 		# + 'go to https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite/job/Taiwan%2C-Remote/Fulfillment-Analyst---New-College-Graduate-2025_JR1988949/apply/autofillWithResume?workerSubType=0c40f6bd1d8f10adf6dae42e46d44a17&workerSubType=ab40a98049581037a3ada55b087049b7 NVIDIA',
 		# ground_task + '\n' + 'Meta',
 	]
-	model = AzureChatOpenAI(
-		model='gpt-4o',
-		api_version='2024-10-21',
-		azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT', ''),
-		api_key=SecretStr(os.getenv('AZURE_OPENAI_KEY', '')),
+	model = ChatOpenAI(
+		model="gpt-4",
+		temperature=0
 	)
 
 	agents = []
